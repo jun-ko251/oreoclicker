@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oreo Clicker</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            position: relative;
+        }
+        #counter {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        #oreo {
+            width: 100px;
+            height: 100px;
+            background-color: blue;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.3s ease-in-out;
+        }
+        #oreo:hover {
+            transform: scale(1.1);
+        }
+        .upgrade {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            border: 2px solid #000;
+            background-color: #f9f9f9;
+            width: 200px;
+        }
+        .upgrade button {
+            margin-top: 10px;
+            padding: 10px;
+            border: none;
+            background-color: green;
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+            width: 100%;
+        }
+        #achievementsButton {
+            padding: 5px 10px;
+            font-size: 0.8em;
+            cursor: pointer;
+            background-color: lightgray;
+            border: 1px solid #000;
+            margin: 5px;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+        #importButton, #exportButton {
+            padding: 5px 10px;
+            font-size: 0.8em;
+            cursor: pointer;
+            background-color: lightgray;
+            border: 1px solid #000;
+            margin: 5px;
+            position: absolute;
+            top: 10px;
+        }
+        #importButton {
+            left: 120px;
+        }
+        #exportButton {
+            left: 230px;
+        }
+        #achievementsBox {
+            position: absolute;
+            top: 40px;
+            left: 10px;
+            width: 220px;
+            height: 170px; /* Fixed height to show exactly three achievements */
+            overflow-y: hidden; /* Hide scrollbar */
+            border: 2px solid #000;
+            background-color: #f9f9f9;
+            display: none;
+            padding: 10px;
+        }
+        .achievement {
+            padding: 5px;
+            margin-bottom: 5px;
+            border: 1px solid #000;
+        }
+        .achievement.completed {
+            background-color: green;
+            color: white;
+        }
+        #upgradeContainer {
+            position: absolute;
+            bottom: 20px;
+            display: flex;
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="counter">0</div>
+    <div id="oreo">Oreo</div>
+    <button id="achievementsButton">Achievements</button>
+    <button id="importButton">Import</button>
+    <button id="exportButton">Export</button>
+    <div id="achievementsBox">
+        <div id="achievementCurious" class="achievement">Curious</div>
+        <div id="achievementFirstClick" class="achievement">First Click</div>
+        <div id="achievementFirstUpgrade" class="achievement">First Upgrade</div>
+        <div id="achievementWakeAndBake" class="achievement">Wake and Bake</div>
+        <div id="achievementFactory" class="achievement">Factory</div>
+    </div>
+    <div id="upgradeContainer">
+        <div class="upgrade" id="upgrade1">
+            <div id="upgradeTitle1">Iron Mouse: Adds 1 to oreo per click</div>
+            <button id="buyUpgrade1">Buy (50)</button>
+        </div>
+        <div class="upgrade" id="upgrade2">
+            <div id="upgradeTitle2">Automation: Adds 1 to oreo per second.</div>
+            <button id="buyUpgrade2">Buy (100)</button>
+        </div>
+    </div>
+
+    <script>
+        const counterElement = document.getElementById('counter');
+        const oreoElement = document.getElementById('oreo');
+        const buyUpgrade1Button = document.getElementById('buyUpgrade1');
+        const buyUpgrade2Button = document.getElementById('buyUpgrade2');
+        const achievementsButton = document.getElementById('achievementsButton');
+        const importButton = document.getElementById('importButton');
+        const exportButton = document.getElementById('exportButton');
+        const achievementsBox = document.getElementById('achievementsBox');
+        const achievements = {
+            curious: document.getElementById('achievementCurious'),
+            firstClick: document.getElementById('achievementFirstClick'),
+            firstUpgrade: document.getElementById('achievementFirstUpgrade'),
+            wakeAndBake: document.getElementById('achievementWakeAndBake'),
+            factory: document.getElementById('achievementFactory')
+        };
+
+        let counter = 0;
+        let cookiesPerClick = 1;
+        let cookiesPerSecond = 0;
+        let achievementsOpened = false;
+        let hasBoughtUpgrade1 = false;
+        let hasBoughtUpgrade2 = false;
+        let upgrade1Cost = 50;
+        let upgrade2Cost = 100;
+        let interval;
+
+        function updateCounter() {
+            counterElement.textContent = counter;
+        }
+
+        function checkAchievements() {
+            if (counter > 0) {
+                achievements.firstClick.classList.add('completed');
+            }
+            if (hasBoughtUpgrade1) {
+                achievements.firstUpgrade.classList.add('completed');
+            }
+            if (counter >= 100) {
+                achievements.wakeAndBake.classList.add('completed');
+            }
+            if (hasBoughtUpgrade2) {
+                achievements.factory.classList.add('completed');
+            }
+        }
+
+        oreoElement.addEventListener('click', () => {
+            counter += cookiesPerClick;
+            updateCounter();
+            checkAchievements();
+        });
+
+        buyUpgrade1Button.addEventListener('click', () => {
+            if (counter >= upgrade1Cost) {
+                counter -= upgrade1Cost;
+                cookiesPerClick += 1;
+                upgrade1Cost = Math.ceil(upgrade1Cost * 1.05);
+                updateCounter();
+                hasBoughtUpgrade1 = true;
+                checkAchievements();
+                buyUpgrade1Button.textContent = `Buy (${upgrade1Cost})`;
+            }
+        });
+
+        buyUpgrade2Button.addEventListener('click', () => {
+            if (counter >= upgrade2Cost) {
+                counter -= upgrade2Cost;
+                cookiesPerSecond += 2;
+                upgrade2Cost = Math.ceil(upgrade2Cost * 1.10);
+                updateCounter();
+                hasBoughtUpgrade2 = true;
+                checkAchievements();
+                buyUpgrade2Button.textContent = `Buy (${upgrade2Cost})`;
+                if (!interval) {
+                    interval = setInterval(() => {
+                        counter += cookiesPerSecond;
+                        updateCounter();
+                        checkAchievements();
+                    }, 1000);
+                }
+            }
+        });
+
+        achievementsButton.addEventListener('click', () => {
+            achievementsBox.style.display = achievementsBox.style.display === 'block' ? 'none' : 'block';
+            if (!achievementsOpened) {
+                achievements.curious.classList.add('completed');
+                achievementsOpened = true;
+            }
+        });
+
+        function exportGameState() {
+            const gameState = {
+                counter,
+                cookiesPerClick,
+                cookiesPerSecond,
+                upgrade1Cost,
+                upgrade2Cost,
+                hasBoughtUpgrade1,
+                hasBoughtUpgrade2,
+                achievementsOpened,
+                achievements: {
+                    firstClick: achievements.firstClick.classList.contains('completed'),
+                    firstUpgrade: achievements.firstUpgrade.classList.contains('completed'),
+                    wakeAndBake: achievements.wakeAndBake.classList.contains('completed'),
+                    factory: achievements.factory.classList.contains('completed'),
+                    curious: achievements.curious.classList.contains('completed')
+                }
+            };
+            const gameStateString = JSON.stringify(gameState);
+            navigator.clipboard.writeText(gameStateString).then(() => {
+                alert('Game state copied to clipboard!');
+            });
+        }
+
+        function importGameState() {
+            const gameStateString = prompt('Paste your game state here:');
+            if (gameStateString) {
+                try {
+                    const gameState = JSON.parse(gameStateString);
+                    counter = gameState.counter;
+                    cookiesPerClick = gameState.cookiesPerClick;
+                    cookiesPerSecond = gameState.cookiesPerSecond;
+                    upgrade1Cost = gameState.upgrade1Cost;
+                    upgrade2Cost = gameState.upgrade2Cost;
+                    hasBoughtUpgrade1 = gameState.hasBoughtUpgrade1;
+                    hasBoughtUpgrade2 = gameState.hasBoughtUpgrade2;
+                    achievementsOpened = gameState.achievementsOpened;
+                    achievements.firstClick.classList.toggle('completed', gameState.achievements.firstClick);
+                                                                                 achievements.firstUpgrade.classList.toggle('completed', gameState.achievements.firstUpgrade);
+                                                                                 achievements.wakeAndBake.classList.toggle('completed', gameState.achievements.wakeAndBake);
+                                                                                 achievements.factory.classList.toggle('completed', gameState.achievements.factory);
+                                                                                 achievements.curious.classList.toggle('completed', gameState.achievements.curious);
+                                                                                 updateCounter();
+                                                                                 checkAchievements();
+                                                                                 buyUpgrade1Button.textContent = `Buy (${upgrade1Cost})`;
+                                                                                 buyUpgrade2Button.textContent = `Buy (${upgrade2Cost})`;
+                                                                                 if (hasBoughtUpgrade2 && !interval) {
+                                                                                     interval = setInterval(() => {
+                                                                                         counter += cookiesPerSecond;
+                                                                                         updateCounter();
+                                                                                         checkAchievements();
+                                                                                     }, 1000);
+                                                                                 }
+                                                                                 alert('Game state imported successfully!');
+                                                                             } catch (error) {
+                                                                                 alert('Invalid game state format!');
+                                                                             }
+                                                                         }
+                                                                     }
+
+                                                                     importButton.addEventListener('click', importGameState);
+                                                                     exportButton.addEventListener('click', exportGameState);
+
+                                                                     checkAchievements();
+                                                                 </script>
+                                                             </body>
+                                                             </html>
+
